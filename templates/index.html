@@ -1,0 +1,2174 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+    <title>Sign2Speak AI | Break Communication Barriers</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Space Grotesk', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            500: '#6366f1', // indigo-500
+                            600: '#4f46e5', // indigo-600
+                            accent: '#8b5cf6', // purple-500
+                        }
+                    },
+                    animation: {
+                        'blob': 'blob 7s infinite',
+                    },
+                    keyframes: {
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <script>
+        // Init theme immediately to prevent FOUC
+        if (localStorage.getItem("theme") === "light") {
+            document.documentElement.classList.add('light-mode');
+        }
+    </script>
+    <style>
+        /* Theme Variables */
+        :root {
+            --bg-color: #040614;
+            --bg-gradient: none;
+            --text-color: #f8fafc;
+            --heading-color: #ffffff;
+            --glass-bg: rgba(15, 23, 42, 0.4);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --nav-bg: rgba(6, 8, 15, 0.8);
+            --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        :root.light-mode {
+            --bg-color: #f8fafc;
+            --bg-gradient: linear-gradient(to bottom right, #f8fafc, #eef2ff, #f5f3ff);
+            --text-color: #475569;
+            --heading-color: #0f172a;
+            --glass-bg: rgba(255, 255, 255, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.5);
+            --nav-bg: rgba(255, 255, 255, 0.85);
+            --glass-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+        }
+        
+        body { 
+            background-color: var(--bg-color) !important; 
+            background-image: var(--bg-gradient);
+            background-attachment: fixed;
+            color: var(--text-color) !important; 
+            overflow-x: hidden; 
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
+        /* Override Tailwind Hardcoded Colors for Light Mode */
+        :root.light-mode .text-white { color: var(--heading-color) !important; }
+        :root.light-mode .text-gray-100,
+        :root.light-mode .text-gray-200,
+        :root.light-mode .text-gray-300,
+        :root.light-mode .text-gray-400,
+        :root.light-mode .text-gray-500 { color: var(--text-color) !important; opacity: 1; }
+        :root.light-mode .bg-black\/30 { background-color: rgba(240, 240, 240, 0.5) !important; }
+        :root.light-mode .bg-gray-900 { background-color: rgba(255, 255, 255, 0.9) !important; }
+        :root.light-mode .border-white\/10 { border-color: rgba(0, 0, 0, 0.05) !important; }
+        :root.light-mode .border-white\/20 { border-color: rgba(0, 0, 0, 0.08) !important; }
+        :root.light-mode .bg-white\/5 { background-color: rgba(0, 0, 0, 0.03) !important; }
+        :root.light-mode p, :root.light-mode h1, :root.light-mode h2, :root.light-mode h3, :root.light-mode li, :root.light-mode span {
+            color: inherit;
+        }
+        
+        /* Light Mode Mix Blend Overrides for Background Orbs */
+        :root.light-mode .mix-blend-screen {
+            mix-blend-mode: multiply !important;
+            opacity: 0.15 !important;
+        }
+        :root.light-mode .text-glow {
+            text-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+        }
+        :root.light-mode .neural-logo-hint {
+            color: rgba(15, 23, 42, 0.5) !important;
+        }
+        :root.light-mode .transition-text {
+            color: #0f172a;
+            -webkit-text-fill-color: #0f172a;
+            text-shadow: none;
+        }
+        :root.light-mode .loader-sub, :root.light-mode .loader-text {
+            color: #0f172a !important;
+            -webkit-text-fill-color: #0f172a !important;
+        }
+
+        /* Glass Elements */
+        .glass { 
+            background: var(--glass-bg) !important; 
+            backdrop-filter: blur(20px) saturate(120%); 
+            -webkit-backdrop-filter: blur(20px) saturate(120%);
+            border: 1px solid var(--glass-border) !important; 
+            box-shadow: var(--glass-shadow);
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease, border-color 0.4s ease;
+        }
+        :root.light-mode .glass {
+            backdrop-filter: blur(14px) saturate(120%);
+            -webkit-backdrop-filter: blur(14px) saturate(120%);
+        }
+
+        .premium-nav {
+            background: var(--nav-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), padding 0.4s ease, background 0.4s ease;
+        }
+        
+        /* Premium Pill Toggle */
+        .theme-switch {
+            position: relative;
+            width: 50px; height: 26px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 999px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: flex;
+            align-items: center;
+            padding: 2px;
+            overflow: hidden;
+        }
+        .theme-switch-knob {
+            width: 20px; height: 20px;
+            background: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 2;
+        }
+        .theme-switch-icon { font-size: 10px; transition: all 0.4s; }
+        
+        :root.light-mode .theme-switch { background: rgba(0,0,0,0.05); }
+        :root.light-mode .theme-switch-knob { transform: translateX(24px); background: #6366f1; color: white; }
+        
+        .theme-switch::before, .theme-switch::after {
+            position: absolute; font-size: 10px; opacity: 0.3; transition: opacity 0.3s;
+        }
+        .theme-switch::before { content: '🌙'; right: 8px; }
+        .theme-switch::after { content: '☀️'; left: 8px; }
+        :root.light-mode .theme-switch::before { opacity: 0.1; }
+        :root.light-mode .theme-switch::after { opacity: 0.8; }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100%) translateX(-50%); opacity: 0; }
+            to { transform: translateY(0) translateX(-50%); opacity: 1; }
+        }
+        
+        .premium-nav-floating {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 95%;
+            max-width: 1200px;
+            z-index: 1000;
+            background: var(--nav-bg);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid var(--glass-border);
+            border-radius: 999px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255,255,255,0.1);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: slideDown 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+        .premium-nav-floating.scrolled {
+            top: 10px;
+            width: 90%;
+            background: rgba(15, 23, 42, 0.8);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        :root.light-mode .premium-nav-floating.scrolled {
+            background: rgba(255, 255, 255, 0.8);
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        @keyframes logoShimmer {
+            0% { border-color: rgba(139, 92, 246, 0.2); box-shadow: 0 0 10px rgba(139, 92, 246, 0.1); }
+            50% { border-color: rgba(56, 189, 248, 0.6); box-shadow: 0 0 20px rgba(56, 189, 248, 0.3); }
+            100% { border-color: rgba(139, 92, 246, 0.2); box-shadow: 0 0 10px rgba(139, 92, 246, 0.1); }
+        }
+        .nav-logo-anim {
+            animation: logoShimmer 3s ease-in-out infinite;
+        }
+
+        .nav-link { position: relative; padding: 0.5rem 1rem; transition: color 0.3s ease; }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #38bdf8, #8b5cf6);
+            transition: width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border-radius: 2px;
+        }
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        .nav-link:hover {
+            color: #38bdf8 !important;
+        }
+
+        .text-glow { text-shadow: 0 0 20px rgba(139, 92, 246, 0.5); }
+        .neon-border { box-shadow: 0 0 20px rgba(56, 189, 248, 0.3); }
+
+        /* Glassy Sheen Button Effect */
+        .btn-sheen {
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-sheen::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s ease;
+        }
+        .btn-sheen:hover::before {
+            left: 100%;
+        }
+
+        .reveal-left {
+            opacity: 0;
+            transform: translateX(-50px);
+            transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .reveal-right {
+            opacity: 0;
+            transform: translateX(50px);
+            transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .reveal-up {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .reveal-active {
+            opacity: 1;
+            transform: translate(0);
+        }
+        .stagger-1 { transition-delay: 0.2s; }
+        .stagger-2 { transition-delay: 0.4s; }
+        .stagger-3 { transition-delay: 0.6s; }
+        .stagger-4 { transition-delay: 0.8s; }
+        .stagger-5 { transition-delay: 1.0s; }
+        
+        .animated-underline {
+            position: relative;
+            display: inline-block;
+        }
+        .animated-underline::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 4px;
+            bottom: -6px;
+            left: 0;
+            background: linear-gradient(90deg, var(--primary-color, #38bdf8), #8b5cf6);
+            transition: width 1s ease-out 0.8s;
+            border-radius: 2px;
+        }
+        .reveal-active .animated-underline::after,
+        .reveal-active.animated-underline::after {
+            width: 100%;
+        }
+
+        /* How It Works Step Connector */
+        .step-connector {
+            position: absolute;
+            top: 2.5rem;
+            left: calc(50% + 2.5rem);
+            width: calc(100% - 5rem);
+            height: 2px;
+            background: linear-gradient(90deg, var(--glass-border), rgba(139,92,246,0.4), var(--glass-border));
+            z-index: 0;
+        }
+        .step-connector::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #38bdf8, #8b5cf6);
+            border-radius: 2px;
+            transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .step-connector.reveal-active::after {
+            width: 100%;
+        }
+        @media (max-width: 1023px) {
+            .step-connector {
+                display: none;
+            }
+        }
+
+        /* Step Number Badge */
+        .step-badge {
+            width: 5rem;
+            height: 5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: white;
+            background: linear-gradient(135deg, #8b5cf6, #38bdf8);
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.4);
+            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.5s ease;
+            position: relative;
+            z-index: 2;
+        }
+        .step-card:hover .step-badge {
+            transform: scale(1.15);
+            box-shadow: 0 0 50px rgba(139, 92, 246, 0.6);
+        }
+
+        .animation-delay-2000 { animation-delay: 2s; }
+        .animation-delay-4000 { animation-delay: 4s; }
+
+        /* Custom Animations */
+        .animate-fade-in-up {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 1s ease-out forwards;
+        }
+        
+        .delay-100 { animation-delay: 0.2s; }
+        .delay-200 { animation-delay: 0.4s; }
+        .delay-300 { animation-delay: 0.6s; }
+        .delay-400 { animation-delay: 0.8s; }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Animated Gradient Text */
+        .bg-pan-x {
+            animation: panX 6s linear infinite;
+            background-size: 200% auto;
+        }
+        
+        @keyframes panX {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Typing Effect cursor */
+        .typing-cursor::after {
+            content: '|';
+            animation: blink 1s step-end infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* Ambient Glow Trail */
+        #glow-cursor {
+            pointer-events: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, rgba(56, 189, 248, 0.05) 40%, transparent 70%);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            mix-blend-mode: screen;
+            transition: width 0.4s ease, height 0.4s ease, opacity 0.3s ease;
+            will-change: transform;
+        }
+        #glow-cursor.cursor-hover {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.25) 0%, rgba(56, 189, 248, 0.1) 40%, transparent 70%);
+        }
+        @media (max-width: 768px) {
+            #glow-cursor { display: none; }
+        }
+
+        /* AI Loader */
+        #ai-loader {
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0c4a6e 100%);
+            transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .loader-rings {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin-bottom: 2rem;
+        }
+        .loader-ring {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            border: 2px solid transparent;
+        }
+        .loader-ring:nth-child(1) {
+            border-top-color: #38bdf8;
+            animation: loaderSpin 1.2s linear infinite;
+        }
+        .loader-ring:nth-child(2) {
+            inset: 10px;
+            border-right-color: #8b5cf6;
+            animation: loaderSpin 1.6s linear infinite reverse;
+        }
+        .loader-ring:nth-child(3) {
+            inset: 20px;
+            border-bottom-color: #ec4899;
+            animation: loaderSpin 2s linear infinite;
+        }
+        .loader-core {
+            position: absolute;
+            inset: 30px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.4), transparent 70%);
+            animation: loaderPulse 1.5s ease-in-out infinite;
+        }
+        @keyframes loaderSpin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        @keyframes loaderPulse {
+            0%, 100% { transform: scale(0.8); opacity: 0.4; }
+            50% { transform: scale(1.2); opacity: 1; }
+        }
+        .loader-text {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, #38bdf8, #8b5cf6, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 0.05em;
+        }
+        .loader-sub {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.5);
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            margin-top: 0.75rem;
+            animation: loaderPulse 2s ease-in-out infinite;
+        }
+
+        /* Page Transition Overlay */
+        #page-transition {
+            position: fixed;
+            inset: 0;
+            z-index: 99998;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0c4a6e 100%);
+            transform: scaleY(0);
+            transform-origin: bottom;
+            transition: transform 0.6s cubic-bezier(0.76, 0, 0.24, 1);
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #page-transition.active {
+            transform: scaleY(1);
+            pointer-events: all;
+        }
+        #page-transition.exit {
+            transform-origin: top;
+            transform: scaleY(0);
+        }
+        .transition-text {
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            background: linear-gradient(90deg, #38bdf8, #8b5cf6, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            opacity: 0;
+            transition: opacity 0.3s ease 0.2s;
+        }
+        #page-transition.active .transition-text {
+            opacity: 1;
+        }
+
+        /* Light Mode Loader & Transition Overrides */
+        :root.light-mode #ai-loader,
+        :root.light-mode #page-transition {
+            background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 50%, #f5f3ff 100%);
+        }
+        :root.light-mode .loader-text {
+            background: linear-gradient(90deg, #6366f1, #8b5cf6, #38bdf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        :root.light-mode .loader-sub,
+        :root.light-mode .transition-text {
+            color: #475569;
+            background: none;
+            -webkit-text-fill-color: initial;
+        }
+        :root.light-mode .loader-core {
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.2), transparent 70%);
+        }
+
+        /* Neural Glow Scroll Progress */
+        #scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            z-index: 99997;
+            pointer-events: none;
+            background: transparent;
+        }
+        .progress-line {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #38bdf8, #8b5cf6, #ec4899, #8b5cf6, #38bdf8);
+            background-size: 300% 100%;
+            animation: progressGradientFlow 3s linear infinite;
+            border-radius: 0 2px 2px 0;
+            position: relative;
+            transition: none;
+            will-change: width;
+        }
+        .progress-line::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.8), #fff);
+            border-radius: 2px;
+            filter: blur(2px);
+            box-shadow: 0 0 15px 3px rgba(139, 92, 246, 0.6), 0 0 40px 6px rgba(56, 189, 248, 0.3);
+        }
+        .progress-glow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 4px;
+            width: 0%;
+            background: linear-gradient(90deg, #38bdf8, #8b5cf6, #ec4899);
+            filter: blur(8px);
+            opacity: 0.6;
+            border-radius: 0 2px 2px 0;
+            will-change: width;
+        }
+        @keyframes progressGradientFlow {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 300% 50%; }
+        }
+
+        /* Neural Logo Formation Section */
+        #neural-logo-section {
+            position: relative;
+            height: 300vh;
+        }
+        #neural-logo-wrap {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #neural-logo-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        .neural-logo-hint {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255,255,255,0.3);
+            font-size: 0.75rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+        }
+        
+        /* Premium Glass Panel */
+        .premium-glass {
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(24px) saturate(120%);
+            -webkit-backdrop-filter: blur(24px) saturate(120%);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 40px 60px -15px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        :root.light-mode .premium-glass {
+            background: rgba(255, 255, 255, 0.65);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 40px 60px -15px rgba(0, 0, 0, 0.05), inset 0 0 0 1px rgba(255, 255, 255, 0.8);
+        }
+
+        /* Documentation Section */
+        #documentation { position: relative; }
+        .doc-iframe-container {
+            position: relative;
+            width: 100%;
+            height: 700px;
+            border-radius: 1rem;
+            overflow: hidden;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--glass-border);
+        }
+        .doc-iframe-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        .highlight-card {
+            background: var(--nav-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .highlight-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--brand-accent);
+            box-shadow: 0 20px 40px rgba(56, 189, 248, 0.1);
+        }
+
+        /* SVG Circular Progress & Bar Graphs */
+        .stat-ring-circle {
+            transition: stroke-dashoffset 2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            stroke-dasharray: 251.2;
+            stroke-dashoffset: 251.2;
+            will-change: stroke-dashoffset;
+        }
+        .stat-bar-fill {
+            transition: width 2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            width: 0%;
+            will-change: width;
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-brand-500 selection:text-white dark">
+
+    <!-- AI Loader Overlay -->
+    <div id="ai-loader">
+        <div class="loader-rings">
+            <div class="loader-ring"></div>
+            <div class="loader-ring"></div>
+            <div class="loader-ring"></div>
+            <div class="loader-core"></div>
+        </div>
+        <div class="loader-text">Sign2Speak AI</div>
+        <div class="loader-sub">Initializing Intelligence...</div>
+    </div>
+
+    <!-- Cursor Glow -->
+    <div id="glow-cursor"></div>
+
+    <!-- Page Transition Overlay -->
+    <div id="page-transition">
+        <span class="transition-text">Loading Experience...</span>
+    </div>
+    <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
+        <div class="absolute top-[-10%] left-1/4 w-[600px] h-[600px] bg-brand-500 rounded-full mix-blend-screen filter blur-[150px] opacity-20 animate-blob"></div>
+        <div class="absolute top-[10%] right-1/4 w-[600px] h-[600px] bg-brand-accent rounded-full mix-blend-screen filter blur-[150px] opacity-20 animate-blob animation-delay-2000"></div>
+        <div class="absolute -bottom-32 left-1/3 w-[600px] h-[600px] bg-pink-500 rounded-full mix-blend-screen filter blur-[150px] opacity-15 animate-blob animation-delay-4000"></div>
+    </div>
+
+    <!-- Neural Network Canvas -->
+    <canvas id="neural-canvas"></canvas>
+    <!-- Neural Glow Scroll Progress -->
+    <div id="scroll-progress">
+        <div class="progress-line"></div>
+        <div class="progress-glow"></div>
+    </div>
+
+    <!-- Ultimate Floating Navbar -->
+    <nav class="premium-nav-floating" id="navbar">
+        <div class="px-6 py-3 flex justify-between items-center relative">
+            
+            <!-- Left: Brand -->
+            <div class="flex items-center gap-8">
+                <a href="#" class="flex items-center gap-3 group">
+                    <div class="relative nav-logo-anim rounded-full border border-white/20 p-0.5">
+                        <div class="absolute inset-0 bg-brand-500 rounded-full blur-md opacity-20 group-hover:opacity-60 transition-opacity"></div>
+                        <img src="{{ url_for('static', filename='sign2 speak 1 ds.png') }}" alt="Logo" class="relative h-10 w-10 rounded-full object-cover">
+                    </div>
+                    <div class="text-xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-brand-accent to-brand-500">
+                        Sign2Speak
+                    </div>
+                </a>
+
+                <!-- Desktop Nav Links -->
+                <div class="hidden lg:flex items-center space-x-1">
+                    <a href="#home" class="nav-link text-sm font-bold text-[var(--text-color)] opacity-70 hover:opacity-100 transition-all">Home</a>
+                    <a href="#features" class="nav-link text-sm font-bold text-[var(--text-color)] opacity-70 hover:opacity-100 transition-all">Features</a>
+                    <a href="#documentation" class="nav-link text-sm font-bold text-[var(--text-color)] opacity-70 hover:opacity-100 transition-all">Documentation</a>
+                </div>
+            </div>
+
+            <!-- Right: Action Suite -->
+            <div class="flex items-center gap-3">
+                <!-- Premium Pill Theme Toggle -->
+                <button id="theme-toggle" class="theme-switch" aria-label="Toggle Theme">
+                    <div class="theme-switch-knob">
+                        <span class="theme-switch-icon" id="toggle-icon">🌙</span>
+                    </div>
+                </button>
+
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-btn" class="lg:hidden w-10 h-10 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors text-[var(--text-color)]">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path id="menu-icon-path" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+
+
+
+                <!-- Primary CTA -->
+                <a href="/app" class="hidden sm:flex px-6 py-2 rounded-full bg-gradient-to-r from-brand-500 to-brand-accent text-white text-xs font-black uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-brand-500/20 btn-sheen">
+                    Launch
+                </a>
+            </div>
+        </div>
+    </nav>
+        
+    <!-- Premium Mobile Drawer -->
+    <div id="mobile-menu" class="fixed inset-0 z-[900] bg-slate-950/80 backdrop-blur-2xl opacity-0 pointer-events-none transition-all duration-500 lg:hidden">
+        <div class="h-full flex flex-col justify-center px-10 gap-10">
+            <nav class="flex flex-col gap-6">
+                <a href="#home" class="mobile-nav-link text-4xl font-black text-white hover:text-brand-accent transition-colors opacity-0 translate-y-10 group flex items-center gap-4">
+                    <span class="text-xs font-mono opacity-30 text-brand-500">01</span> Home
+                </a>
+                <a href="#features" class="mobile-nav-link text-4xl font-black text-white hover:text-brand-accent transition-colors opacity-0 translate-y-10 group flex items-center gap-4">
+                    <span class="text-xs font-mono opacity-30 text-brand-500">02</span> Features
+                </a>
+                <a href="#documentation" class="mobile-nav-link text-4xl font-black text-white hover:text-brand-accent transition-colors opacity-0 translate-y-10 group flex items-center gap-4">
+                    <span class="text-xs font-mono opacity-30 text-brand-500">03</span> Documentation
+                </a>
+            </nav>
+
+            <div class="pt-10 border-t border-white/10 flex flex-col gap-6">
+                <a href="/app" class="w-full py-5 rounded-2xl bg-gradient-to-r from-brand-500 to-brand-accent text-white font-black text-center uppercase tracking-widest shadow-xl shadow-brand-500/20">
+                    Launch Dashboard
+                </a>
+                <p class="text-center text-white/40 text-sm font-medium">Made with ❤️ by Sign2Speak AI</p>
+            </div>
+        </div>
+    </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden flex flex-col items-center justify-center min-h-screen text-center px-4">
+        <!-- Ambient Cursor Glow Container -->
+        <div id="glow-cursor"></div>
+        
+        <!-- Interactive Premium Glass Panel -->
+        <div class="premium-glass p-8 md:p-14 lg:p-20 rounded-[2.5rem] max-w-7xl mx-auto w-full relative z-20 group transition-all duration-700 hover:border-white/20 hover:shadow-[0_40px_80px_-15px_rgba(139,92,246,0.3)]">
+            
+            <!-- Title -->
+            <h1 class="text-6xl md:text-8xl font-black mb-6 tracking-tighter leading-tight animate-fade-in-up drop-shadow-2xl">
+                <span class="bg-clip-text text-transparent bg-gradient-to-r from-brand-accent via-brand-500 to-pink-500 bg-pan-x text-glow">Sign2Speak AI</span>
+            </h1>
+            
+            <!-- Tagline -->
+            <h2 class="text-xl md:text-3xl font-light text-gray-200 mb-10 italic animate-fade-in-up delay-100 tracking-wide" id="typed-tagline">
+                <!-- Injected via JS -->
+            </h2>
+            
+            <!-- Description -->
+            <div class="text-lg md:text-2xl text-gray-400 mb-14 max-w-3xl mx-auto leading-relaxed space-y-6 animate-fade-in-up delay-200">
+                <p>
+                    In a world that speaks endlessly,<br class="hidden md:block">
+                    there are voices unheard, stories unseen.<br class="hidden md:block">
+                    We built a bridge — not of sound, but of understanding.
+                </p>
+                <p>
+                    <span class="text-white font-medium drop-shadow-md">Sign2Speak AI</span> transforms every movement,<br class="hidden md:block">
+                    every expression, every silent word<br class="hidden md:block">
+                    into a language the world can hear.
+                </p>
+                <p class="text-brand-accent font-semibold pt-4 text-glow text-xl md:text-2xl">
+                    🚀 Not just recognition — but connection.
+                </p>
+            </div>
+            
+            <!-- Buttons -->
+            <div class="flex flex-col sm:flex-row gap-6 items-center justify-center animate-fade-in-up delay-300">
+                <a href="/app" class="group relative px-10 py-5 rounded-full bg-white text-gray-900 font-bold text-lg hover:bg-gray-100 transition-all duration-300 neon-border transform hover:-translate-y-1 hover:scale-105 overflow-hidden shadow-[0_0_40px_rgba(255,255,255,0.4)]">
+                    <span class="relative z-10 flex items-center gap-3">
+                        Try the Experience 
+                        <svg class="w-6 h-6 group-hover:translate-x-2 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    </span>
+                    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent opacity-0 group-hover:opacity-100 group-hover:translate-x-full -translate-x-full transition-all duration-1000 ease-in-out"></div>
+                </a>
+                <a href="#problem" class="relative overflow-hidden px-10 py-5 rounded-full glass text-white font-semibold text-lg hover:bg-white/10 transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 group border border-white/20 hover:border-brand-accent">
+                    <span class="relative z-10 flex items-center gap-2">Discover More</span>
+                    <div class="absolute inset-0 bg-gradient-to-r from-brand-500/0 via-brand-accent/20 to-brand-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-md"></div>
+                </a>
+            </div>
+            
+        </div>
+    </section>
+
+    <!-- Split Problem & Solution Section -->
+    <section id="problem" class="py-32 relative overflow-hidden">
+        <!-- Background Reveal Glow -->
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-brand-500 rounded-full mix-blend-screen filter blur-[240px] opacity-10 pointer-events-none z-0"></div>
+        
+        <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-12 gap-12 lg:gap-20 items-center relative z-10">
+            
+            <!-- Left Side: Problem & Solution Text -->
+            <div class="lg:col-span-5 flex flex-col space-y-12 reveal-left">
+                
+                <!-- Problem Half -->
+                <div class="space-y-5">
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass border border-red-500/30 text-red-500 font-bold text-[0.65rem] tracking-widest uppercase shadow-[0_4px_15px_rgba(248,113,113,0.1)]">
+                        🔴 Problem
+                    </div>
+                    
+                    <h2 class="text-3xl lg:text-4xl font-black leading-tight text-[var(--heading-color)]">
+                        The world is loud… <br>
+                        <span class="animated-underline text-brand-accent italic font-light reveal-active">not everyone is heard.</span>
+                    </h2>
+                    
+                    <div class="text-base md:text-lg text-[var(--text-color)] font-light leading-relaxed opacity-90 pl-4 py-1 border-l-2 border-red-500/30">
+                        <p class="reveal-up stagger-1 mb-2">
+                            Hands speak, but meaning often gets lost.
+                        </p>
+                        <p class="reveal-up stagger-2">
+                            Silence isn't emptiness—<span class="font-bold bg-clip-text text-transparent bg-gradient-to-r from-red-400 to-pink-500">it’s expression waiting to be recognized.</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Solution Half -->
+                <div class="space-y-5 reveal-up stagger-3">
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass border border-green-500/30 text-green-500 font-bold text-[0.65rem] tracking-widest uppercase shadow-[0_4px_15px_rgba(7ade80,0.1)]">
+                        🟢 Solution
+                    </div>
+                    
+                    <h2 class="text-3xl lg:text-4xl font-black leading-tight text-[var(--heading-color)]">
+                        We built the bridge.
+                    </h2>
+                    
+                    <div class="text-base md:text-lg text-[var(--text-color)] font-light leading-relaxed opacity-90 pl-4 py-1 border-l-2 border-green-500/30">
+                        <p class="reveal-up stagger-4 mb-2">
+                            Sign2Speak AI seamlessly transforms gestures into words.
+                        </p>
+                        <p class="reveal-up stagger-5 font-bold text-brand-accent mt-3">
+                            ✨ Communication — without barriers.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+            
+            <!-- Right Side: Cinematic Video -->
+            <div class="lg:col-span-7 relative reveal-right h-full flex flex-col justify-center mt-12 lg:mt-0">
+                <!-- Decorative Frame -->
+                <div class="absolute -inset-6 bg-gradient-to-tr from-brand-accent/20 via-brand-500/10 to-pink-500/20 rounded-[2.5rem] blur-2xl opacity-60 pointer-events-none"></div>
+                
+                <!-- Video Card -->
+                <div class="relative w-full aspect-video glass p-2 rounded-[2rem] overflow-hidden group shadow-2xl transition-all duration-700 hover:shadow-[0_20px_50px_rgba(139,92,246,0.3)] hover:-translate-y-2">
+                    <div class="overflow-hidden rounded-[1.5rem] relative bg-[#0f172a] h-full w-full">
+                        
+                        <video src="{{ url_for('static', filename='AI_Video_Generation_For_Sign_Speak.mp4') }}" 
+                               class="w-full h-full object-cover transform transition-transform duration-[0.4s] ease-out group-hover:scale-[1.03]" 
+                               autoplay loop muted playsinline></video>
+                        
+                        <!-- Overlay -->
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/10 z-10 pointer-events-none mix-blend-multiply transition-opacity duration-500 group-hover:opacity-40"></div>
+                        
+                        <!-- Floating Glass Badge -->
+                        <div class="absolute top-6 left-6 z-20 glass px-4 py-2 rounded-full backdrop-blur-md shadow-lg border-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <span class="text-[0.65rem] font-bold text-white tracking-widest flex items-center gap-2">
+                                <span class="relative flex h-2 w-2">
+                                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-accent opacity-75"></span>
+                                  <span class="relative inline-flex rounded-full h-2 w-2 bg-brand-accent"></span>
+                                </span> 
+                                SIGN2SPEAK AI IN ACTION
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-32 relative overflow-hidden bg-gradient-to-b from-transparent to-black/30">
+        <!-- Subtle Glow -->
+        <div class="absolute left-1/4 top-1/4 w-[500px] h-[500px] bg-brand-accent rounded-full mix-blend-screen filter blur-[150px] opacity-10 pointer-events-none"></div>
+
+        <div class="max-w-7xl mx-auto px-6 relative z-10">
+            <div class="text-center mb-20 reveal-up">
+                <h2 class="text-4xl md:text-5xl font-black mb-6 text-[var(--heading-color)] drop-shadow-lg">Powerful Features. Seamless Experience.</h2>
+                <p class="text-[var(--text-color)] text-xl font-light opacity-80 max-w-2xl mx-auto">Interact with the cards below to uncover the deeply integrated AI mechanics powering Sign2Speak.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-10">
+                
+                <!-- Card 1 -->
+                <div class="glass p-8 rounded-2xl hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(139,92,246,0.25)] transition-all duration-500 group reveal-up stagger-1 border border-[var(--glass-border)] text-center">
+                    <div class="text-5xl mb-5 filter drop-shadow-[0_0_15px_rgba(56,189,248,0.3)] transition-transform duration-500 group-hover:scale-110">🎥</div>
+                    <h3 class="text-xl font-bold text-[var(--heading-color)] mb-3">Real-Time Detection</h3>
+                    <p class="text-[var(--text-color)] text-sm leading-relaxed opacity-80">Capture hand gestures instantly with smooth, live processing.</p>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="glass p-8 rounded-2xl hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(139,92,246,0.25)] transition-all duration-500 group reveal-up stagger-2 border border-[var(--glass-border)] text-center">
+                    <div class="text-5xl mb-5 filter drop-shadow-[0_0_15px_rgba(139,92,246,0.3)] transition-transform duration-500 group-hover:scale-110">🧠</div>
+                    <h3 class="text-xl font-bold text-[var(--heading-color)] mb-3">AI-Powered Recognition</h3>
+                    <p class="text-[var(--text-color)] text-sm leading-relaxed opacity-80">Accurately interpret signs using advanced AI models.</p>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="glass p-8 rounded-2xl hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(139,92,246,0.25)] transition-all duration-500 group reveal-up stagger-3 border border-[var(--glass-border)] text-center">
+                    <div class="text-5xl mb-5 filter drop-shadow-[0_0_15px_rgba(56,189,248,0.3)] transition-transform duration-500 group-hover:scale-110">🔤</div>
+                    <h3 class="text-xl font-bold text-[var(--heading-color)] mb-3">Letter to Sentence Conversion</h3>
+                    <p class="text-[var(--text-color)] text-sm leading-relaxed opacity-80">Turn individual signs into meaningful words and sentences.</p>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="glass p-8 rounded-2xl hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(139,92,246,0.25)] transition-all duration-500 group reveal-up stagger-4 border border-[var(--glass-border)] text-center">
+                    <div class="text-5xl mb-5 filter drop-shadow-[0_0_15px_rgba(236,72,153,0.3)] transition-transform duration-500 group-hover:scale-110">🔊</div>
+                    <h3 class="text-xl font-bold text-[var(--heading-color)] mb-3">Text-to-Speech Output</h3>
+                    <p class="text-[var(--text-color)] text-sm leading-relaxed opacity-80">Convert text into clear, natural-sounding voice instantly.</p>
+                </div>
+
+                <!-- Card 5 -->
+                <div class="glass p-8 rounded-2xl hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(139,92,246,0.25)] transition-all duration-500 group reveal-up stagger-5 border border-[var(--glass-border)] text-center">
+                    <div class="text-5xl mb-5 filter drop-shadow-[0_0_15px_rgba(250,204,21,0.3)] transition-transform duration-500 group-hover:scale-110">⚡</div>
+                    <h3 class="text-xl font-bold text-[var(--heading-color)] mb-3">Fast & Accurate Results</h3>
+                    <p class="text-[var(--text-color)] text-sm leading-relaxed opacity-80">Experience quick responses with high precision performance.</p>
+                </div>
+
+                <!-- Card 6 -->
+                <div class="glass p-8 rounded-2xl hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(139,92,246,0.25)] transition-all duration-500 group reveal-up stagger-6 border border-[var(--glass-border)] text-center">
+                    <div class="text-5xl mb-5 filter drop-shadow-[0_0_15px_rgba(59,130,246,0.3)] transition-transform duration-500 group-hover:scale-110">🌐</div>
+                    <h3 class="text-xl font-bold text-[var(--heading-color)] mb-3">Accessible Anywhere</h3>
+                    <p class="text-[var(--text-color)] text-sm leading-relaxed opacity-80">Use anytime, anywhere with seamless accessibility.</p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Who Is It For -->
+    <section class="py-24 px-6 max-w-7xl mx-auto">
+        <div class="flex flex-col lg:flex-row items-center gap-16">
+            <div class="w-full lg:w-1/2">
+                <h2 class="text-4xl font-bold mb-6">Who Is It For?</h2>
+                <ul class="space-y-4">
+                    <li class="flex items-center gap-3 bg-white/5 p-4 rounded-xl border border-white/10">
+                        <div class="w-2 h-2 rounded-full bg-brand-accent"></div>
+                        <span class="font-semibold text-white">Deaf and mute individuals</span> navigating daily life.
+                    </li>
+                    <li class="flex items-center gap-3 bg-white/5 p-4 rounded-xl border border-white/10">
+                        <div class="w-2 h-2 rounded-full bg-brand-500"></div>
+                        <span class="font-semibold text-white">Students & learners</span> mastering sign language.
+                    </li>
+                    <li class="flex items-center gap-3 bg-white/5 p-4 rounded-xl border border-white/10">
+                        <div class="w-2 h-2 rounded-full bg-brand-accent"></div>
+                        <span class="font-semibold text-white">Teachers & educators</span> grading or assisting remotely.
+                    </li>
+                    <li class="flex items-center gap-3 bg-white/5 p-4 rounded-xl border border-white/10">
+                        <div class="w-2 h-2 rounded-full bg-brand-500"></div>
+                        <span class="font-semibold text-white">Organizations</span> prioritizing systemic accessibility.
+                    </li>
+                </ul>
+            </div>
+            <div class="w-full lg:w-1/2 glass p-2 rounded-2xl neon-border rotate-[2deg] hover:rotate-0 transition-transform duration-500">
+                <div class="bg-gray-900 rounded-xl p-8 aspect-video flex flex-col justify-center items-center text-center border border-white/10 relative overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-t from-brand-500/20 to-transparent"></div>
+                    <div class="w-20 h-20 bg-brand-500/20 rounded-full flex items-center justify-center mb-4 relative z-10 border border-brand-accent/30 shadow-[0_0_20px_rgba(56,189,248,0.2)]">
+                        <span class="text-4xl">🌍</span>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-2 relative z-10">Universal Access</h3>
+                    <p class="text-gray-400 relative z-10 max-w-sm">Deployed directly to the web. Communication made universal without heavy downloads.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Impact & Statistics Section -->
+    <section id="impact" class="py-32 relative overflow-hidden bg-gradient-to-b from-black/0 via-brand-500/5 to-black/0">
+        <!-- Background Effects -->
+        <div class="absolute top-1/4 left-0 w-[400px] h-[400px] bg-brand-500 rounded-full mix-blend-screen filter blur-[150px] opacity-10 pointer-events-none"></div>
+        <div class="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-brand-accent rounded-full mix-blend-screen filter blur-[150px] opacity-10 pointer-events-none"></div>
+
+        <div class="max-w-7xl mx-auto px-6 relative z-10">
+            <!-- Section Header -->
+            <div class="text-center mb-20 reveal-up">
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-brand-500/30 text-brand-500 font-bold text-[0.65rem] tracking-widest uppercase mb-6 shadow-[0_4px_15px_rgba(139,92,246,0.15)]">
+                    📊 Real Impact, Backed by Data
+                </div>
+                <h2 class="text-4xl md:text-5xl font-black text-[var(--heading-color)] drop-shadow-lg mb-6 leading-tight">
+                    Insights from user research highlighting the need for <br><span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-accent to-brand-500">accessible communication</span>
+                </h2>
+                <div class="text-[var(--text-color)] text-lg font-light opacity-80 max-w-2xl mx-auto mt-4 hint-tooltip relative group inline-block cursor-help">
+                    <p>Based on survey responses across diverse demographics.</p>
+                    <span class="absolute -top-10 left-1/2 -translate-x-1/2 px-3 py-1 bg-white/10 backdrop-blur-md border border-white/20 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-xl">Data from real user surveys</span>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+                
+                <!-- Stat Card 1 -->
+                <div class="glass p-8 rounded-[2.5rem] hover:scale-[1.03] hover:shadow-[0_0_40px_rgba(56,189,248,0.3)] transition-all duration-500 group reveal-up stagger-1 border border-[var(--glass-border)] hover:border-brand-accent/50 text-center flex flex-col items-center justify-center animate-stat" data-percentage="82">
+                    <!-- Circular Graph -->
+                    <div class="relative w-40 h-40 mb-6 flex items-center justify-center filter drop-shadow-[0_0_15px_rgba(56,189,248,0.3)] group-hover:drop-shadow-[0_0_25px_rgba(56,189,248,0.5)] transition-all">
+                        <!-- Background Ring -->
+                        <svg class="w-full h-full transform -rotate-90 absolute inset-0" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="40" stroke="var(--glass-border)" stroke-width="8" fill="none" class="opacity-30" />
+                            <!-- Progress Ring -->
+                            <circle cx="50" cy="50" r="40" stroke="url(#blueGrad)" stroke-width="8" fill="none" stroke-linecap="round" class="stat-ring-circle" />
+                            <defs>
+                                <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stop-color="#38bdf8" />
+                                    <stop offset="100%" stop-color="#0284c7" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <!-- Center Value -->
+                        <div class="absolute inset-0 flex flex-col items-center justify-center">
+                            <span class="text-4xl font-black text-[var(--heading-color)]"><span class="counter-val">0</span>%</span>
+                        </div>
+                    </div>
+                    <h3 class="text-xl font-bold text-[var(--heading-color)] mb-3">General Usefulness</h3>
+                    <p class="text-[var(--text-color)] text-sm font-light opacity-80 leading-relaxed mb-6">Found the solution highly useful for daily interaction.</p>
+                    <!-- Bar Graph secondary element -->
+                    <div class="w-full h-2 bg-black/20 dark:bg-white/5 rounded-full overflow-hidden mt-auto border border-black/10 dark:border-white/10">
+                        <div class="h-full bg-gradient-to-r from-[#38bdf8] to-[#0284c7] stat-bar-fill rounded-full shadow-[0_0_10px_rgba(56,189,248,0.8)]"></div>
+                    </div>
+                </div>
+
+                <!-- Stat Card 2 -->
+                <div class="glass p-8 rounded-[2.5rem] hover:scale-[1.03] hover:shadow-[0_0_40px_rgba(139,92,246,0.3)] transition-all duration-500 group reveal-up stagger-2 border border-[var(--glass-border)] hover:border-brand-500/50 text-center flex flex-col items-center justify-center animate-stat" data-percentage="76">
+                    <!-- Circular Graph -->
+                    <div class="relative w-40 h-40 mb-6 flex items-center justify-center filter drop-shadow-[0_0_15px_rgba(139,92,246,0.3)] group-hover:drop-shadow-[0_0_25px_rgba(139,92,246,0.5)] transition-all">
+                        <svg class="w-full h-full transform -rotate-90 absolute inset-0" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="40" stroke="var(--glass-border)" stroke-width="8" fill="none" class="opacity-30" />
+                            <circle cx="50" cy="50" r="40" stroke="url(#purpleGrad)" stroke-width="8" fill="none" stroke-linecap="round" class="stat-ring-circle" />
+                            <defs>
+                                <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stop-color="#8b5cf6" />
+                                    <stop offset="100%" stop-color="#6d28d9" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <div class="absolute inset-0 flex flex-col items-center justify-center">
+                            <span class="text-4xl font-black text-[var(--heading-color)]"><span class="counter-val">0</span>%</span>
+                        </div>
+                    </div>
+                    <h3 class="text-xl font-bold text-[var(--heading-color)] mb-3">Emergency Critical</h3>
+                    <p class="text-[var(--text-color)] text-sm font-light opacity-80 leading-relaxed mb-6">Believe it is crucial for emergencies and critical scenarios.</p>
+                    <div class="w-full h-2 bg-black/20 dark:bg-white/5 rounded-full overflow-hidden mt-auto border border-black/10 dark:border-white/10">
+                        <div class="h-full bg-gradient-to-r from-[#8b5cf6] to-[#6d28d9] stat-bar-fill rounded-full shadow-[0_0_10px_rgba(139,92,246,0.8)]"></div>
+                    </div>
+                </div>
+
+                <!-- Stat Card 3 -->
+                <div class="glass p-8 rounded-[2.5rem] hover:scale-[1.03] hover:shadow-[0_0_40px_rgba(6,182,212,0.3)] transition-all duration-500 group reveal-up stagger-3 border border-[var(--glass-border)] hover:border-cyan-500/50 text-center flex flex-col items-center justify-center animate-stat" data-percentage="71">
+                    <!-- Circular Graph -->
+                    <div class="relative w-40 h-40 mb-6 flex items-center justify-center filter drop-shadow-[0_0_15px_rgba(6,182,212,0.3)] group-hover:drop-shadow-[0_0_25px_rgba(6,182,212,0.5)] transition-all">
+                        <svg class="w-full h-full transform -rotate-90 absolute inset-0" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="40" stroke="var(--glass-border)" stroke-width="8" fill="none" class="opacity-30" />
+                            <circle cx="50" cy="50" r="40" stroke="url(#cyanGrad)" stroke-width="8" fill="none" stroke-linecap="round" class="stat-ring-circle" />
+                            <defs>
+                                <linearGradient id="cyanGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stop-color="#22d3ee" />
+                                    <stop offset="100%" stop-color="#0891b2" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <div class="absolute inset-0 flex flex-col items-center justify-center">
+                            <span class="text-4xl font-black text-[var(--heading-color)]"><span class="counter-val">0</span>%</span>
+                        </div>
+                    </div>
+                    <h3 class="text-xl font-bold text-[var(--heading-color)] mb-3">Awareness Gap</h3>
+                    <p class="text-[var(--text-color)] text-sm font-light opacity-80 leading-relaxed mb-6">Currently do not know any formal sign language.</p>
+                    <div class="w-full h-2 bg-black/20 dark:bg-white/5 rounded-full overflow-hidden mt-auto border border-black/10 dark:border-white/10">
+                        <div class="h-full bg-gradient-to-r from-[#22d3ee] to-[#0891b2] stat-bar-fill rounded-full shadow-[0_0_10px_rgba(34,211,238,0.8)]"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="py-32 relative overflow-hidden">
+        <!-- Background Glow -->
+        <div class="absolute top-1/2 right-0 w-[600px] h-[600px] bg-brand-500 rounded-full mix-blend-screen filter blur-[200px] opacity-10 pointer-events-none"></div>
+        <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-brand-accent rounded-full mix-blend-screen filter blur-[160px] opacity-10 pointer-events-none"></div>
+
+        <div class="max-w-7xl mx-auto px-6 relative z-10">
+            <!-- Section Header -->
+            <div class="text-center mb-20 reveal-up">
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-brand-500/30 text-brand-accent font-bold text-xs tracking-widest uppercase mb-6 shadow-[0_4px_15px_rgba(139,92,246,0.15)]">
+                    ⚙️ How It Works
+                </div>
+                <h2 class="text-4xl md:text-5xl font-black text-[var(--heading-color)] drop-shadow-lg">Simple. Seamless. Instant.</h2>
+                <p class="text-[var(--text-color)] text-lg font-light opacity-80 max-w-2xl mx-auto mt-4">Four effortless steps to bridge the communication gap.</p>
+            </div>
+
+            <!-- Steps Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-12 lg:gap-8 relative">
+
+                <!-- Connector Lines (desktop only) -->
+                <div class="hidden lg:block absolute top-0 left-0 w-full h-full pointer-events-none">
+                    <div class="step-connector reveal-up" style="left: calc(12.5% + 2.5rem); width: calc(25% - 5rem); top: 2.5rem;"></div>
+                    <div class="step-connector reveal-up stagger-2" style="left: calc(37.5% + 2.5rem); width: calc(25% - 5rem); top: 2.5rem;"></div>
+                    <div class="step-connector reveal-up stagger-3" style="left: calc(62.5% + 2.5rem); width: calc(25% - 5rem); top: 2.5rem;"></div>
+                </div>
+
+                <!-- Step 1 -->
+                <div class="step-card flex flex-col items-center text-center group reveal-up stagger-1">
+                    <div class="step-badge mb-6">
+                        <span>01</span>
+                    </div>
+                    <div class="glass p-6 rounded-2xl border border-[var(--glass-border)] w-full hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(139,92,246,0.2)] transition-all duration-500">
+                        <div class="text-4xl mb-4">📷</div>
+                        <h3 class="text-lg font-bold text-[var(--heading-color)] mb-2">Open the Camera</h3>
+                        <p class="text-[var(--text-color)] text-sm leading-relaxed opacity-80">Allow access to your device camera to begin detection.</p>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="step-card flex flex-col items-center text-center group reveal-up stagger-2">
+                    <div class="step-badge mb-6">
+                        <span>02</span>
+                    </div>
+                    <div class="glass p-6 rounded-2xl border border-[var(--glass-border)] w-full hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(139,92,246,0.2)] transition-all duration-500">
+                        <div class="text-4xl mb-4">🤟</div>
+                        <h3 class="text-lg font-bold text-[var(--heading-color)] mb-2">Show Your Gesture</h3>
+                        <p class="text-[var(--text-color)] text-sm leading-relaxed opacity-80">Use sign language in front of the camera naturally.</p>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="step-card flex flex-col items-center text-center group reveal-up stagger-3">
+                    <div class="step-badge mb-6">
+                        <span>03</span>
+                    </div>
+                    <div class="glass p-6 rounded-2xl border border-[var(--glass-border)] w-full hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(139,92,246,0.2)] transition-all duration-500">
+                        <div class="text-4xl mb-4">🧠</div>
+                        <h3 class="text-lg font-bold text-[var(--heading-color)] mb-2">AI Understands</h3>
+                        <p class="text-[var(--text-color)] text-sm leading-relaxed opacity-80">Our AI model analyzes and recognizes your hand gestures in real time.</p>
+                    </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="step-card flex flex-col items-center text-center group reveal-up stagger-4">
+                    <div class="step-badge mb-6">
+                        <span>04</span>
+                    </div>
+                    <div class="glass p-6 rounded-2xl border border-[var(--glass-border)] w-full hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(139,92,246,0.2)] transition-all duration-500">
+                        <div class="text-4xl mb-4">💬</div>
+                        <h3 class="text-lg font-bold text-[var(--heading-color)] mb-2">Get Instant Output</h3>
+                        <p class="text-[var(--text-color)] text-sm leading-relaxed opacity-80">Your signs are converted into text (and speech) instantly.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Project Documentation Section -->
+    <section id="documentation" class="py-32 relative overflow-hidden">
+        <!-- Background Effects -->
+        <div class="absolute top-0 right-1/4 w-[500px] h-[500px] bg-brand-500 rounded-full mix-blend-screen filter blur-[180px] opacity-10 pointer-events-none"></div>
+        <div class="absolute bottom-0 left-1/4 w-[600px] h-[600px] bg-brand-accent rounded-full mix-blend-screen filter blur-[180px] opacity-10 pointer-events-none"></div>
+
+        <div class="max-w-7xl mx-auto px-6 relative z-10">
+            <!-- Section Header -->
+            <div class="text-center mb-16 reveal-up">
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-brand-500/30 text-brand-500 font-bold text-[0.65rem] tracking-widest uppercase mb-6 shadow-[0_4px_15px_rgba(139,92,246,0.15)]">
+                    📄 Deep Dive Insights
+                </div>
+                <h2 class="text-4xl md:text-5xl font-black text-[var(--heading-color)] drop-shadow-lg mb-6 leading-tight">
+                    Project <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-accent to-brand-500">Documentation</span>
+                </h2>
+                <p class="text-[var(--text-color)] text-lg font-light opacity-80 max-w-2xl mx-auto">
+                    Explore the technical foundation, research, and impact of the Sign2Speak project in our comprehensive guide.
+                </p>
+            </div>
+
+            <!-- Quick Highlights -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                <div class="highlight-card reveal-up stagger-1">
+                    <div class="text-2xl mb-3">🎯</div>
+                    <h3 class="text-lg font-bold text-[var(--heading-color)] mb-2">Core Mission</h3>
+                    <p class="text-[var(--text-color)] text-sm opacity-70">Empowering the deaf community through real-time sign language synthesis.</p>
+                </div>
+                <div class="highlight-card reveal-up stagger-2">
+                    <div class="text-2xl mb-3">💻</div>
+                    <h3 class="text-lg font-bold text-[var(--heading-color)] mb-2">Tech Stack</h3>
+                    <p class="text-[var(--text-color)] text-sm opacity-70">Leveraging MediaPipe, OpenCV, and Deep Learning for high-accuracy detection.</p>
+                </div>
+                <div class="highlight-card reveal-up stagger-3">
+                    <div class="text-2xl mb-3">📈</div>
+                    <h3 class="text-lg font-bold text-[var(--heading-color)] mb-2">Impact Goal</h3>
+                    <p class="text-[var(--text-color)] text-sm opacity-70">Reducing communication barriers in social, professional, and emergency contexts.</p>
+                </div>
+            </div>
+
+            <!-- Documentation Card -->
+            <div class="glass p-4 rounded-[2.5rem] reveal-up border border-[var(--glass-border)] shadow-2xl">
+                <!-- Toolbar -->
+                <div class="flex flex-wrap justify-between items-center px-4 py-3 border-b border-white/5 mb-4 gap-4">
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full bg-[#ff5f56]"></div>
+                        <div class="w-3 h-3 rounded-full bg-[#ffbd2e]"></div>
+                        <div class="w-3 h-3 rounded-full bg-[#27c93f]"></div>
+                        <span class="ml-2 text-xs font-mono opacity-40 uppercase tracking-widest">Sign2Speak_Protocol.pdf</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <a href="https://docs.google.com/document/d/1y7Kg9E-3MifsohPExQ5KDOIhZz8Q2qj7hAHxoZEpacI/export?format=pdf" class="px-5 py-2 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-[var(--heading-color)] transition-all flex items-center gap-2 group btn-sheen">
+                            <span>Download PDF</span>
+                            <svg class="w-4 h-4 opacity-50 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                        </a>
+                        <a href="https://docs.google.com/document/d/1y7Kg9E-3MifsohPExQ5KDOIhZz8Q2qj7hAHxoZEpacI/edit?usp=sharing" target="_blank" class="px-5 py-2 rounded-full bg-gradient-to-r from-brand-accent to-brand-500 text-white text-xs font-bold transition-all shadow-lg shadow-brand-accent/20 flex items-center gap-2 group btn-sheen">
+                            <span>View Full Doc</span>
+                            <svg class="w-4 h-4 opacity-70 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Iframe Container -->
+                <div class="doc-iframe-container">
+                    <iframe 
+                        src="https://docs.google.com/document/d/1y7Kg9E-3MifsohPExQ5KDOIhZz8Q2qj7hAHxoZEpacI/preview" 
+                        allow="autoplay" 
+                        loading="lazy" 
+                        title="Project Documentation Preview"
+                        style="width: 100%; height: 100%; border: none;">
+                    </iframe>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- Call to Action -->
+    <section class="py-32 relative overflow-hidden text-center">
+        <!-- Glow effects -->
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-brand-500 rounded-[100%] mix-blend-screen filter blur-[120px] opacity-20 pointer-events-none"></div>
+        
+        <div class="relative z-10 max-w-3xl mx-auto px-6">
+            <h2 class="text-5xl md:text-6xl font-extrabold mb-8 tracking-tight">Start communicating <br><span class="text-brand-accent text-glow">without barriers.</span></h2>
+            <p class="text-xl text-gray-300 mb-10 max-w-2xl mx-auto">Join the movement towards a more inclusive digital world. Experience Sign2Speak AI directly in your browser.</p>
+            <a href="/app" class="inline-flex items-center gap-2 px-10 py-5 rounded-full bg-white text-gray-900 font-bold text-xl hover:bg-gray-100 transition shadow-[0_0_30px_rgba(255,255,255,0.4)] transform hover:scale-105">
+                👉 Launch App
+            </a>
+        </div>
+    </section>
+
+    <!-- Neural Logo Formation Section -->
+    <section id="neural-logo-section">
+        <div id="neural-logo-wrap">
+            <canvas id="neural-logo-canvas"></canvas>
+            <div class="neural-logo-hint" id="neural-logo-hint">↓ Scroll to reveal identity ↓</div>
+        </div>
+    </section>
+
+    <!-- Premium Footer -->
+    <footer class="relative overflow-hidden border-t border-white/10 reveal-up">
+        <!-- Background Glow -->
+        <div class="absolute bottom-0 left-1/4 w-[500px] h-[500px] bg-brand-500 rounded-full mix-blend-screen filter blur-[200px] opacity-[0.07] pointer-events-none"></div>
+        <div class="absolute top-0 right-1/4 w-[400px] h-[400px] bg-brand-accent rounded-full mix-blend-screen filter blur-[180px] opacity-[0.05] pointer-events-none"></div>
+        
+        <div class="max-w-7xl mx-auto px-6 pt-16 pb-6 relative z-10">
+            <!-- 3-Column Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-12 mb-14">
+                
+                <!-- Left: Branding -->
+                <div class="space-y-5">
+                    <div class="flex items-center gap-3">
+                        <img src="{{ url_for('static', filename='sign2 speak 1 ds.png') }}" alt="Sign2Speak Logo" class="h-10 w-10 rounded-full object-cover border-2 border-brand-500/50 shadow-[0_0_15px_rgba(139,92,246,0.3)]">
+                        <span class="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-brand-accent to-brand-500">Sign2Speak AI</span>
+                    </div>
+                    <p class="text-[var(--text-color)] text-sm leading-relaxed opacity-70 max-w-xs">Redefining communication, one gesture at a time.</p>
+                    <!-- Social Icons -->
+                    <div class="flex items-center gap-4 pt-2">
+                        <a href="https://github.com/rushindra1404/sign2speak" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full glass border border-[var(--glass-border)] flex items-center justify-center text-[var(--text-color)] opacity-70 hover:opacity-100 hover:border-brand-accent/50 hover:shadow-[0_0_15px_rgba(56,189,248,0.2)] hover:scale-110 transition-all duration-300" aria-label="GitHub">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                        </a>
+                        <a href="https://www.linkedin.com/in/rushindra-bandaru-59739b2b3/" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full glass border border-[var(--glass-border)] flex items-center justify-center text-[var(--text-color)] opacity-70 hover:opacity-100 hover:border-brand-accent/50 hover:shadow-[0_0_15px_rgba(56,189,248,0.2)] hover:scale-110 transition-all duration-300" aria-label="LinkedIn">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                        </a>
+                        <a href="mailto:rushindrabandaru07@gmail.com" class="w-10 h-10 rounded-full glass border border-[var(--glass-border)] flex items-center justify-center text-[var(--text-color)] opacity-70 hover:opacity-100 hover:border-brand-accent/50 hover:shadow-[0_0_15px_rgba(56,189,248,0.2)] hover:scale-110 transition-all duration-300" aria-label="Email">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Middle: Quick Links -->
+                <div class="space-y-5 md:pl-12">
+                    <h4 class="text-sm font-bold text-[var(--heading-color)] uppercase tracking-widest">Quick Links</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#hero" class="text-[var(--text-color)] text-sm opacity-70 hover:opacity-100 hover:text-brand-accent transition-all duration-300 relative group">Home <span class="absolute -bottom-0.5 left-0 w-0 h-[1px] bg-brand-accent group-hover:w-full transition-all duration-300"></span></a></li>
+                        <li><a href="#features" class="text-[var(--text-color)] text-sm opacity-70 hover:opacity-100 hover:text-brand-accent transition-all duration-300 relative group">Features <span class="absolute -bottom-0.5 left-0 w-0 h-[1px] bg-brand-accent group-hover:w-full transition-all duration-300"></span></a></li>
+                        <li><a href="#how-it-works" class="text-[var(--text-color)] text-sm opacity-70 hover:opacity-100 hover:text-brand-accent transition-all duration-300 relative group">How It Works <span class="absolute -bottom-0.5 left-0 w-0 h-[1px] bg-brand-accent group-hover:w-full transition-all duration-300"></span></a></li>
+                        <li><a href="#problem" class="text-[var(--text-color)] text-sm opacity-70 hover:opacity-100 hover:text-brand-accent transition-all duration-300 relative group">Our Mission <span class="absolute -bottom-0.5 left-0 w-0 h-[1px] bg-brand-accent group-hover:w-full transition-all duration-300"></span></a></li>
+                    </ul>
+                </div>
+
+                <!-- Right: Connect -->
+                <div class="space-y-5 md:pl-12">
+                    <h4 class="text-sm font-bold text-[var(--heading-color)] uppercase tracking-widest">Connect</h4>
+                    <ul class="space-y-3">
+                        <li><a href="https://github.com/rushindra1404/sign2speak" target="_blank" rel="noopener noreferrer" class="text-[var(--text-color)] text-sm opacity-70 hover:opacity-100 hover:text-brand-accent transition-all duration-300 relative group">GitHub <span class="absolute -bottom-0.5 left-0 w-0 h-[1px] bg-brand-accent group-hover:w-full transition-all duration-300"></span></a></li>
+                        <li><a href="https://www.linkedin.com/in/rushindra-bandaru-59739b2b3/" target="_blank" rel="noopener noreferrer" class="text-[var(--text-color)] text-sm opacity-70 hover:opacity-100 hover:text-brand-accent transition-all duration-300 relative group">LinkedIn <span class="absolute -bottom-0.5 left-0 w-0 h-[1px] bg-brand-accent group-hover:w-full transition-all duration-300"></span></a></li>
+                        <li><a href="mailto:rushindrabandaru07@gmail.com" class="text-[var(--text-color)] text-sm opacity-70 hover:opacity-100 hover:text-brand-accent transition-all duration-300 relative group">Email <span class="absolute -bottom-0.5 left-0 w-0 h-[1px] bg-brand-accent group-hover:w-full transition-all duration-300"></span></a></li>
+                    </ul>
+                </div>
+
+            </div>
+
+            <!-- Divider -->
+            <div class="w-full h-px bg-gradient-to-r from-transparent via-[var(--glass-border)] to-transparent mb-6"></div>
+
+            <!-- Bottom Bar -->
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4 text-center">
+                <p class="text-[var(--text-color)] text-xs opacity-60">&copy; 2026 Sign2Speak AI &mdash; Built with purpose, designed for impact.</p>
+                <p class="text-[var(--text-color)] text-xs opacity-60">Made with <span class="text-red-500">❤️</span> by Sign2Speak</p>
+            </div>
+        </div>
+
+        <!-- Scroll to Top Button -->
+        <button onclick="window.scrollTo({top:0,behavior:'smooth'})" class="fixed bottom-8 right-8 z-50 w-12 h-12 rounded-full glass border border-[var(--glass-border)] flex items-center justify-center text-[var(--heading-color)] hover:border-brand-accent/50 hover:shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:scale-110 transition-all duration-300 opacity-0 pointer-events-none" id="scroll-top-btn" aria-label="Scroll to top">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/></svg>
+        </button>
+    </footer>
+
+    <!-- Minimal JS -->
+    <script>
+        // Navbar Scroll Effect
+        const navbar = document.getElementById('navbar');
+        const navContainer = document.getElementById('nav-container');
+        let lastScroll = 0;
+        
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.scrollY;
+            
+            if (currentScroll > 50) {
+                navContainer.style.paddingTop = '0.5rem';
+                navContainer.style.paddingBottom = '0.5rem';
+                navbar.style.background = 'var(--nav-bg)';
+            } else {
+                navContainer.style.paddingTop = '1rem';
+                navContainer.style.paddingBottom = '1rem';
+                navbar.style.background = 'transparent';
+            }
+            
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.pageYOffset;
+            const navbar = document.getElementById('navbar');
+            
+            if (currentScroll > 20) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+            
+            // Scroll-to-top button visibility
+            const scrollTopBtn = document.getElementById('scroll-top-btn');
+            if (scrollTopBtn) {
+                if (currentScroll > 400) {
+                    scrollTopBtn.style.opacity = '1';
+                    scrollTopBtn.style.pointerEvents = 'auto';
+                } else {
+                    scrollTopBtn.style.opacity = '0';
+                    scrollTopBtn.style.pointerEvents = 'none';
+                }
+            }
+
+            // Neural Glow Scroll Progress
+            const docHeight = document.body.scrollHeight - window.innerHeight;
+            const scrollProgress = docHeight > 0 ? (currentScroll / docHeight) * 100 : 0;
+            const progressLine = document.querySelector('.progress-line');
+            const progressGlow = document.querySelector('.progress-glow');
+            if (progressLine) progressLine.style.width = scrollProgress + '%';
+            if (progressGlow) progressGlow.style.width = scrollProgress + '%';
+            
+            // Active Link Highlighting
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            sections.forEach(sec => {
+                const top = window.scrollY;
+                const offset = sec.offsetTop - 150;
+                const height = sec.offsetHeight;
+                const id = sec.getAttribute('id');
+                
+                if(id && top >= offset && top < offset + height) {
+                    navLinks.forEach(links => {
+                        links.classList.remove('active');
+                        document.querySelector('.nav-link[href*=' + id + ']')?.classList.add('active');
+                    });
+                }
+            });
+        });
+        });
+
+        // Theme Toggle Logic
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const mobileThemeToggleBtn = document.getElementById('mobile-theme-toggle');
+        
+        function updateThemeUI(isLight) {
+            const icon = document.getElementById('toggle-icon');
+            if (icon) {
+                icon.textContent = isLight ? '☀️' : '🌙';
+            }
+        }
+        
+        function setTheme(isLight) {
+            if (isLight) {
+                document.documentElement.classList.add('light-mode');
+                localStorage.setItem("theme", "light");
+            } else {
+                document.documentElement.classList.remove('light-mode');
+                localStorage.setItem("theme", "dark");
+            }
+            updateThemeUI(isLight);
+        }
+        
+        // Initialize Theme UI matching FOUC prevention in <head>
+        updateThemeUI(localStorage.getItem("theme") === "light");
+        
+        themeToggleBtn.addEventListener('click', () => setTheme(!document.documentElement.classList.contains('light-mode')));
+
+        // Mobile Menu Logic
+        const mobileBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const menuIconPath = document.getElementById('menu-icon-path');
+        let menuOpen = false;
+        
+        function toggleMobileMenu() {
+            menuOpen = !menuOpen;
+            const links = document.querySelectorAll('.mobile-nav-link');
+            if(menuOpen) {
+                mobileMenu.style.opacity = '1';
+                mobileMenu.style.pointerEvents = 'auto';
+                menuIconPath.setAttribute('d', 'M6 18L18 6M6 6l12 12');
+                links.forEach((link, idx) => {
+                    setTimeout(() => {
+                        link.style.opacity = '1';
+                        link.style.transform = 'translateY(0)';
+                    }, 100 + (idx * 80));
+                });
+            } else {
+                mobileMenu.style.opacity = '0';
+                mobileMenu.style.pointerEvents = 'none';
+                menuIconPath.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
+                links.forEach(link => {
+                    link.style.opacity = '0';
+                    link.style.transform = 'translateY(20px)';
+                });
+            }
+        }
+        
+        mobileBtn.addEventListener('click', toggleMobileMenu);
+        
+        // Close mobile menu when a link is clicked
+        document.querySelectorAll('.mobile-nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                if(menuOpen) toggleMobileMenu();
+            });
+        });
+
+        // Typing Effect for Tagline
+        const tagline = '“Where silence finds its voice, and gestures turn into words.”';
+        const taglineElement = document.getElementById('typed-tagline');
+        let index = 0;
+        
+        function typeWriter() {
+            if (!taglineElement) return;
+            if (index === 0) {
+                taglineElement.classList.add('typing-cursor');
+            }
+            if (index < tagline.length) {
+                taglineElement.innerHTML += tagline.charAt(index);
+                index++;
+                setTimeout(typeWriter, 50); // Typing speed
+            } else {
+                setTimeout(() => taglineElement.classList.remove('typing-cursor'), 2000);
+            }
+        }
+        
+        setTimeout(typeWriter, 1000);
+
+        // Ambient Cursor Glow Trail
+        const glowCursor = document.getElementById('glow-cursor');
+        if (glowCursor) {
+            document.addEventListener('mousemove', (e) => {
+                requestAnimationFrame(() => {
+                    glowCursor.style.left = e.clientX + 'px';
+                    glowCursor.style.top = e.clientY + 'px';
+                });
+            });
+            
+            document.addEventListener('mouseleave', () => {
+                glowCursor.style.opacity = '0';
+            });
+            document.addEventListener('mouseenter', () => {
+                glowCursor.style.opacity = '1';
+            });
+        }
+
+        // Scroll Reveal Animations
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.15
+        };
+        
+        const scrollObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('reveal-active');
+                    
+                    // Activate any child staggered reveals
+                    const staggers = entry.target.querySelectorAll('.reveal-up');
+                    staggers.forEach(child => child.classList.add('reveal-active'));
+                    
+                    // Specific to animated underlines
+                    const underlines = entry.target.querySelectorAll('.animated-underline');
+                    underlines.forEach(child => child.classList.add('reveal-active'));
+                    
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+        
+        document.querySelectorAll('.reveal-left, .reveal-right, .reveal-up').forEach(el => {
+            // Only observe parent blocks so we don't double trigger
+            if(!el.classList.contains('reveal-up') || !el.parentElement.closest('.reveal-left, .reveal-right, .reveal-up')) {
+                scrollObserver.observe(el);
+            }
+        });
+
+        // ===== AI Loader =====
+        window.addEventListener('load', () => {
+            const loader = document.getElementById('ai-loader');
+            if (loader) {
+                setTimeout(() => {
+                    loader.style.opacity = '0';
+                    setTimeout(() => {
+                        loader.style.display = 'none';
+                    }, 600);
+                }, 800);
+            }
+        });
+
+        // ===== Cursor Glow Trail =====
+        (function() {
+            const cursor = document.getElementById('glow-cursor');
+            if (!cursor || window.matchMedia('(max-width: 768px)').matches) return;
+
+            let mouseX = 0, mouseY = 0;
+            let curX = 0, curY = 0;
+            const speed = 0.08;
+
+            document.addEventListener('mousemove', (e) => {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+            });
+
+            function animate() {
+                curX += (mouseX - curX) * speed;
+                curY += (mouseY - curY) * speed;
+                cursor.style.left = curX + 'px';
+                cursor.style.top = curY + 'px';
+                requestAnimationFrame(animate);
+            }
+            animate();
+
+            // Scale up on interactive elements
+            document.querySelectorAll('a, button, [role="button"], input, .glass').forEach(el => {
+                el.addEventListener('mouseenter', () => cursor.classList.add('cursor-hover'));
+                el.addEventListener('mouseleave', () => cursor.classList.remove('cursor-hover'));
+            });
+        })();
+
+        // ===== Page Transition =====
+        (function() {
+            const overlay = document.getElementById('page-transition');
+            if (!overlay) return;
+
+            // Entry: slide the overlay away on page load
+            window.addEventListener('load', () => {
+                if (overlay.classList.contains('active')) {
+                    setTimeout(() => {
+                        overlay.classList.add('exit');
+                        overlay.classList.remove('active');
+                        setTimeout(() => {
+                            overlay.classList.remove('exit');
+                        }, 700);
+                    }, 100);
+                }
+            });
+
+            // Exit: intercept link clicks and trigger overlay before navigating
+            document.querySelectorAll('a[href]').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    const href = this.getAttribute('href');
+                    // Skip anchors, external links, and links that open in new tabs
+                    if (!href || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('javascript:') || this.target === '_blank') return;
+
+                    e.preventDefault();
+                    overlay.classList.remove('exit');
+                    overlay.classList.add('active');
+
+                    setTimeout(() => {
+                        window.location.href = href;
+                    }, 650);
+                });
+            });
+
+            // Mark overlay as active on pageshow if navigating back via bfcache
+            window.addEventListener('pageshow', (e) => {
+                if (e.persisted) {
+                    overlay.classList.add('active');
+                    setTimeout(() => {
+                        overlay.classList.add('exit');
+                        overlay.classList.remove('active');
+                        setTimeout(() => overlay.classList.remove('exit'), 700);
+                    }, 100);
+                }
+            });
+        })();
+
+        // ===== Neural Network Background Animation =====
+        (function() {
+            const canvas = document.getElementById('neural-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            // Responsive sizing
+            let W, H, nodes = [], connections = [], pulses = [];
+            const isMobile = window.matchMedia('(max-width: 768px)').matches;
+            const NODE_COUNT = isMobile ? 30 : 60;
+            const CONNECTION_DIST = isMobile ? 140 : 180;
+            const MOUSE_RADIUS = 150;
+
+            let mouseX = -9999, mouseY = -9999;
+            let scrollProgress = 0;
+
+            function resize() {
+                W = canvas.width = window.innerWidth;
+                H = canvas.height = window.innerHeight;
+            }
+            resize();
+            window.addEventListener('resize', resize);
+
+            // Style
+            canvas.style.cssText = 'position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:0.5;';
+
+            // Track mouse
+            document.addEventListener('mousemove', e => {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+            });
+
+            // Track scroll
+            window.addEventListener('scroll', () => {
+                const docH = document.body.scrollHeight - window.innerHeight;
+                scrollProgress = docH > 0 ? window.scrollY / docH : 0;
+            }, { passive: true });
+
+            // Node class
+            class Node {
+                constructor() {
+                    this.x = Math.random() * W;
+                    this.y = Math.random() * H;
+                    this.baseX = this.x;
+                    this.baseY = this.y;
+                    this.vx = (Math.random() - 0.5) * 0.3;
+                    this.vy = (Math.random() - 0.5) * 0.3;
+                    this.radius = 1.5 + Math.random() * 1.5;
+                    this.order = 0; // activation order set later
+                    this.glow = 0;
+                }
+                update() {
+                    // Idle float
+                    this.baseX += this.vx;
+                    this.baseY += this.vy;
+                    if (this.baseX < 0 || this.baseX > W) this.vx *= -1;
+                    if (this.baseY < 0 || this.baseY > H) this.vy *= -1;
+
+                    // Mouse repulsion
+                    const dx = this.baseX - mouseX;
+                    const dy = this.baseY - mouseY;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < MOUSE_RADIUS && dist > 0) {
+                        const force = (MOUSE_RADIUS - dist) / MOUSE_RADIUS * 20;
+                        this.x = this.baseX + (dx / dist) * force;
+                        this.y = this.baseY + (dy / dist) * force;
+                    } else {
+                        this.x = this.baseX;
+                        this.y = this.baseY;
+                    }
+
+                    // Scroll activation
+                    const target = this.order <= scrollProgress ? 1 : 0.15;
+                    this.glow += (target - this.glow) * 0.05;
+                }
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius * (0.8 + this.glow * 0.8), 0, Math.PI * 2);
+                    const alpha = 0.2 + this.glow * 0.8;
+                    ctx.fillStyle = this.glow > 0.5
+                        ? `rgba(139, 92, 246, ${alpha})`
+                        : `rgba(56, 189, 248, ${alpha})`;
+                    ctx.fill();
+                    if (this.glow > 0.5) {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius * 3, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(139, 92, 246, ${this.glow * 0.15})`;
+                        ctx.fill();
+                    }
+                }
+            }
+
+            // Data pulse class
+            class Pulse {
+                constructor(a, b) {
+                    this.a = a;
+                    this.b = b;
+                    this.t = 0;
+                    this.speed = 0.01 + Math.random() * 0.02;
+                    this.alive = true;
+                }
+                update() {
+                    this.t += this.speed;
+                    if (this.t >= 1) this.alive = false;
+                }
+                draw() {
+                    const x = this.a.x + (this.b.x - this.a.x) * this.t;
+                    const y = this.a.y + (this.b.y - this.a.y) * this.t;
+                    ctx.beginPath();
+                    ctx.arc(x, y, 2.5, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${0.9 - this.t * 0.6})`;
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(x, y, 6, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(139, 92, 246, ${0.3 - this.t * 0.2})`;
+                    ctx.fill();
+                }
+            }
+
+            // Initialize nodes
+            for (let i = 0; i < NODE_COUNT; i++) {
+                nodes.push(new Node());
+            }
+            // Assign activation order based on position (left-to-right + top-to-bottom)
+            nodes.sort((a, b) => (a.baseX + a.baseY * 0.3) - (b.baseX + b.baseY * 0.3));
+            nodes.forEach((n, i) => n.order = i / (NODE_COUNT - 1));
+
+            // Build connections
+            for (let i = 0; i < nodes.length; i++) {
+                for (let j = i + 1; j < nodes.length; j++) {
+                    const dx = nodes[i].baseX - nodes[j].baseX;
+                    const dy = nodes[i].baseY - nodes[j].baseY;
+                    if (Math.sqrt(dx * dx + dy * dy) < CONNECTION_DIST) {
+                        connections.push([i, j]);
+                    }
+                }
+            }
+
+            // Spawn data pulses periodically
+            let pulseTimer = 0;
+            function spawnPulse() {
+                if (connections.length === 0) return;
+                const ci = Math.floor(Math.random() * connections.length);
+                const [a, b] = connections[ci];
+                if (nodes[a].glow > 0.4 && nodes[b].glow > 0.4) {
+                    pulses.push(new Pulse(nodes[a], nodes[b]));
+                }
+            }
+
+            // Animation loop
+            function animate() {
+                ctx.clearRect(0, 0, W, H);
+
+                // Draw connections
+                for (const [i, j] of connections) {
+                    const a = nodes[i], b = nodes[j];
+                    const avgGlow = (a.glow + b.glow) / 2;
+                    if (avgGlow < 0.1) continue;
+                    ctx.beginPath();
+                    ctx.moveTo(a.x, a.y);
+                    ctx.lineTo(b.x, b.y);
+                    ctx.strokeStyle = `rgba(139, 92, 246, ${avgGlow * 0.25})`;
+                    ctx.lineWidth = 0.5 + avgGlow * 0.5;
+                    ctx.stroke();
+                }
+
+                // Update & draw nodes
+                for (const n of nodes) {
+                    n.update();
+                    n.draw();
+                }
+
+                // Pulses
+                pulseTimer++;
+                if (pulseTimer > 60) {
+                    pulseTimer = 0;
+                    spawnPulse();
+                }
+                for (let i = pulses.length - 1; i >= 0; i--) {
+                    pulses[i].update();
+                    pulses[i].draw();
+                    if (!pulses[i].alive) pulses.splice(i, 1);
+                }
+
+                requestAnimationFrame(animate);
+            }
+            animate();
+        })();
+
+        // ===== Neural Logo Formation Animation =====
+        (function() {
+            const section = document.getElementById('neural-logo-section');
+            const wrap = document.getElementById('neural-logo-wrap');
+            const canvas = document.getElementById('neural-logo-canvas');
+            const hint = document.getElementById('neural-logo-hint');
+            if (!canvas || !section) return;
+            const ctx = canvas.getContext('2d');
+
+            const isMobile = window.matchMedia('(max-width: 768px)').matches;
+            const PARTICLE_COUNT = isMobile ? 100 : 200;
+            const CONNECT_DIST = isMobile ? 60 : 80;
+            const MOUSE_R = 120;
+            let W, H;
+            let mouseX = -9999, mouseY = -9999;
+            let sectionProgress = 0;
+            let particles = [];
+            let textPositions = [];
+
+            function resize() {
+                W = canvas.width = canvas.offsetWidth;
+                H = canvas.height = canvas.offsetHeight;
+                sampleText();
+                assignTargets();
+            }
+
+            // Sample text pixels using offscreen canvas
+            function sampleText() {
+                textPositions = [];
+                const off = document.createElement('canvas');
+                const octx = off.getContext('2d');
+                off.width = W;
+                off.height = H;
+                const fontSize = isMobile ? Math.floor(W / 8) : Math.floor(W / 14);
+                octx.fillStyle = '#fff';
+                octx.font = `900 ${fontSize}px Inter, sans-serif`;
+                octx.textAlign = 'center';
+                octx.textBaseline = 'middle';
+                octx.fillText('Sign2Speak AI', W / 2, H / 2);
+                const data = octx.getImageData(0, 0, W, H).data;
+                const gap = isMobile ? 6 : 4;
+                for (let y = 0; y < H; y += gap) {
+                    for (let x = 0; x < W; x += gap) {
+                        if (data[(y * W + x) * 4 + 3] > 128) {
+                            textPositions.push({ x, y });
+                        }
+                    }
+                }
+            }
+
+            // Particle class
+            class Particle {
+                constructor(i) {
+                    this.x = Math.random() * (W || 800);
+                    this.y = Math.random() * (H || 600);
+                    this.originX = this.x;
+                    this.originY = this.y;
+                    this.targetX = this.x;
+                    this.targetY = this.y;
+                    this.vx = (Math.random() - 0.5) * 0.6;
+                    this.vy = (Math.random() - 0.5) * 0.6;
+                    this.radius = 1.2 + Math.random() * 1.3;
+                    this.index = i;
+                }
+            }
+
+            // Create particles
+            for (let i = 0; i < PARTICLE_COUNT; i++) {
+                particles.push(new Particle(i));
+            }
+
+            function assignTargets() {
+                if (textPositions.length === 0) return;
+                for (let i = 0; i < particles.length; i++) {
+                    const tp = textPositions[Math.floor((i / particles.length) * textPositions.length)];
+                    particles[i].targetX = tp.x;
+                    particles[i].targetY = tp.y;
+                }
+            }
+
+            resize();
+            window.addEventListener('resize', resize);
+
+            // Track mouse relative to canvas
+            document.addEventListener('mousemove', e => {
+                const rect = canvas.getBoundingClientRect();
+                mouseX = e.clientX - rect.left;
+                mouseY = e.clientY - rect.top;
+            });
+
+            // Track section scroll progress
+            function updateProgress() {
+                const rect = section.getBoundingClientRect();
+                const sectionH = section.offsetHeight - window.innerHeight;
+                if (sectionH <= 0) { sectionProgress = 0; return; }
+                const scrolled = -rect.top;
+                sectionProgress = Math.max(0, Math.min(1, scrolled / sectionH));
+            }
+            window.addEventListener('scroll', updateProgress, { passive: true });
+
+            // Easing
+            function easeInOutCubic(t) {
+                return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+            }
+
+            let frame = 0;
+            function animate() {
+                ctx.clearRect(0, 0, W, H);
+                frame++;
+
+                const progress = easeInOutCubic(sectionProgress);
+
+                // Hint fade
+                if (hint) hint.style.opacity = sectionProgress < 0.1 ? '1' : '0';
+
+                // Update particles
+                for (const p of particles) {
+                    // Float when not forming
+                    if (progress < 0.01) {
+                        p.originX += p.vx;
+                        p.originY += p.vy;
+                        if (p.originX < 0 || p.originX > W) p.vx *= -1;
+                        if (p.originY < 0 || p.originY > H) p.vy *= -1;
+                    }
+
+                    // Lerp between random origin and text target
+                    let destX = p.originX + (p.targetX - p.originX) * progress;
+                    let destY = p.originY + (p.targetY - p.originY) * progress;
+
+                    // Mouse repulsion
+                    const dx = destX - mouseX;
+                    const dy = destY - mouseY;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < MOUSE_R && dist > 0) {
+                        const force = (MOUSE_R - dist) / MOUSE_R * 25;
+                        destX += (dx / dist) * force;
+                        destY += (dy / dist) * force;
+                    }
+
+                    p.x += (destX - p.x) * 0.12;
+                    p.y += (destY - p.y) * 0.12;
+                }
+
+                // Draw connections (fade as logo forms)
+                const connAlpha = Math.max(0, 0.2 - progress * 0.18);
+                if (connAlpha > 0.01) {
+                    for (let i = 0; i < particles.length; i++) {
+                        for (let j = i + 1; j < particles.length; j++) {
+                            const dx = particles[i].x - particles[j].x;
+                            const dy = particles[i].y - particles[j].y;
+                            const d = dx * dx + dy * dy;
+                            if (d < CONNECT_DIST * CONNECT_DIST) {
+                                ctx.beginPath();
+                                ctx.moveTo(particles[i].x, particles[i].y);
+                                ctx.lineTo(particles[j].x, particles[j].y);
+                                const lineAlpha = connAlpha * (1 - Math.sqrt(d) / CONNECT_DIST);
+                                ctx.strokeStyle = `rgba(139,92,246,${lineAlpha})`;
+                                ctx.lineWidth = 0.5;
+                                ctx.stroke();
+                            }
+                        }
+                    }
+                }
+
+                // Draw particles
+                const isLightMode = document.documentElement.classList.contains('light-mode');
+                const breathe = 1 + Math.sin(frame * 0.03) * 0.08 * progress;
+                for (const p of particles) {
+                    const activeGlow = progress;
+                    const r = p.radius * (1 + activeGlow * 0.8) * breathe;
+
+                    // Glow halo when formed
+                    if (progress > 0.5) {
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, r * 4, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(139,92,246,${(progress - 0.5) * (isLightMode ? 0.15 : 0.35)})`;
+                        ctx.fill();
+                    }
+
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+                    const g = progress > 0.5 ? 1 : progress * 2;
+                    
+                    if (isLightMode && progress > 0.3) {
+                        const darkFactor = (progress - 0.3) / 0.7;
+                        const rCol = 100 + 155 * g - (100 + 155 * g - 15) * darkFactor;
+                        const gCol = 140 + 60 * g - (140 + 60 * g - 23) * darkFactor;
+                        const bCol = 248 - (248 - 42) * darkFactor;
+                        ctx.fillStyle = `rgba(${rCol}, ${gCol}, ${bCol}, ${0.5 + activeGlow * 0.5})`;
+                    } else {
+                        ctx.fillStyle = `rgba(${100 + 155 * g}, ${140 + 60 * g}, ${248}, ${0.5 + activeGlow * 0.5})`;
+                    }
+                    ctx.fill();
+                }
+
+                // Overlay text fade-in at near-complete
+                if (progress > 0.75) {
+                    const tAlpha = (progress - 0.75) / 0.25 * 0.35;
+                    const fontSize = isMobile ? Math.floor(W / 8) : Math.floor(W / 14);
+                    ctx.font = `900 ${fontSize}px Inter, sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillStyle = isLightMode ? `rgba(15,23,42,${tAlpha * 2})` : `rgba(255,255,255,${tAlpha})`;
+                    ctx.fillText('Sign2Speak AI', W / 2, H / 2);
+                }
+
+                requestAnimationFrame(animate);
+            }
+            animate();
+        })();
+
+        // ===== Impact & Statistics Animation =====
+        (function() {
+            const stats = document.querySelectorAll('.animate-stat');
+            if (stats.length === 0) return;
+
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.3
+            };
+
+            const statObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const card = entry.target;
+                        const percentage = parseInt(card.getAttribute('data-percentage'), 10) || 0;
+                        
+                        // Counter Animation
+                        const counterEl = card.querySelector('.counter-val');
+                        if (counterEl) {
+                            let start = 0;
+                            const duration = 2000;
+                            const startTime = performance.now();
+                            
+                            function updateCounter(currentTime) {
+                                const elapsed = currentTime - startTime;
+                                const progress = Math.min(elapsed / duration, 1);
+                                // easeOutQuart
+                                const ease = 1 - Math.pow(1 - progress, 4);
+                                const currentVal = Math.floor(ease * percentage);
+                                counterEl.textContent = currentVal;
+                                
+                                if (progress < 1) {
+                                    requestAnimationFrame(updateCounter);
+                                } else {
+                                    counterEl.textContent = percentage;
+                                }
+                            }
+                            requestAnimationFrame(updateCounter);
+                        }
+                        
+                        // SVG Ring & Bar Animation delay logic for visual sync
+                        setTimeout(() => {
+                            const ringEl = card.querySelector('.stat-ring-circle');
+                            if (ringEl) {
+                                const offset = 251.2 - (251.2 * percentage) / 100;
+                                ringEl.style.strokeDashoffset = offset;
+                            }
+
+                            const barEl = card.querySelector('.stat-bar-fill');
+                            if (barEl) {
+                                barEl.style.width = percentage + '%';
+                            }
+                        }, 100);
+                        
+                        observer.unobserve(card);
+                    }
+                });
+            }, observerOptions);
+
+            stats.forEach(stat => statObserver.observe(stat));
+        })();
+
+        // ===== Neural Glow Scroll Progress =====
+        window.addEventListener('scroll', () => {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - window.innerHeight;
+            if (height > 0) {
+                const scrolled = (winScroll / height) * 100;
+                const pLine = document.querySelector('.progress-line');
+                const pGlow = document.querySelector('.progress-glow');
+                if (pLine && pGlow) {
+                    pLine.style.width = scrolled + '%';
+                    pGlow.style.width = scrolled + '%';
+                }
+            }
+        });
+    </script>
+</body>
+</html>

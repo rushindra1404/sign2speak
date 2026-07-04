@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Signal Lost | Sign2Speak AI</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script>
+        // Init theme immediately to prevent FOUC
+        if (localStorage.getItem("theme") === "light") {
+            document.documentElement.classList.add('light-mode');
+        }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            500: '#6366f1',
+                            accent: '#8b5cf6'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --bg-color: #040614;
+            --text-color: #f8fafc;
+            --glass-bg: rgba(15, 23, 42, 0.4);
+            --glass-border: rgba(255, 255, 255, 0.15);
+        }
+        
+        :root.light-mode {
+            --bg-color: #f8fafc;
+            --text-color: #0f172a;
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(0, 0, 0, 0.1);
+        }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .ambient-mesh {
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            pointer-events: none;
+            background: 
+                radial-gradient(ellipse 60% 60% at 30% 20%, rgba(239, 68, 68, 0.12) 0%, transparent 50%),
+                radial-gradient(ellipse 60% 60% at 70% 80%, rgba(56, 189, 248, 0.12) 0%, transparent 50%),
+                radial-gradient(ellipse 50% 50% at 80% 30%, rgba(139, 92, 246, 0.12) 0%, transparent 50%);
+            filter: blur(100px);
+        }
+
+        :root.light-mode .ambient-mesh {
+            background: 
+                radial-gradient(ellipse 60% 60% at 30% 20%, rgba(56, 189, 248, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse 60% 60% at 70% 80%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse 50% 50% at 50% 100%, rgba(236, 72, 153, 0.1) 0%, transparent 50%);
+        }
+
+        /* Perspective wrapper */
+        .card-perspective {
+            perspective: 2000px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* 3D Glass Object */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(24px) saturate(120%);
+            -webkit-backdrop-filter: blur(24px) saturate(120%);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 40px 80px -20px rgba(0,0,0,0.8), inset 0 0 0 1px rgba(255,255,255,0.05);
+            border-radius: 2rem;
+            padding: 4rem 3rem;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+            transform-style: preserve-3d;
+            transition: transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1);
+            max-width: 600px;
+            width: 90%;
+            /* default state */
+            transform: rotateX(0deg) rotateY(0deg) translateZ(0);
+        }
+
+        :root.light-mode .glass-card {
+            box-shadow: 0 20px 50px rgba(0,0,0,0.05), inset 0 0 0 1px rgba(255,255,255,0.6);
+        }
+
+        /* Floating inner elements to pop out in 3D */
+        .card-inner {
+            transform: translateZ(50px);
+            transform-style: preserve-3d;
+        }
+
+        .glitch-text {
+            font-size: 8rem;
+            font-weight: 900;
+            line-height: 1;
+            background: linear-gradient(135deg, #f87171, #8b5cf6, #38bdf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+            position: relative;
+            display: inline-block;
+            transform: translateZ(80px);
+            text-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .glitch-text::before, .glitch-text::after {
+            content: '404';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-color);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            z-index: -1;
+            opacity: 0.8;
+            pointer-events: none;
+        }
+
+        .glitch-text::before {
+            left: 4px;
+            text-shadow: -2px 0 red;
+            animation: glitch-anim-1 3s infinite linear alternate-reverse;
+        }
+
+        .glitch-text::after {
+            left: -4px;
+            text-shadow: -2px 0 blue;
+            animation: glitch-anim-2 4s infinite linear alternate-reverse;
+        }
+
+        @keyframes glitch-anim-1 {
+            0% { clip-path: inset(20% 0 80% 0); }
+            20% { clip-path: inset(60% 0 10% 0); }
+            40% { clip-path: inset(40% 0 50% 0); }
+            60% { clip-path: inset(80% 0 5% 0); }
+            80% { clip-path: inset(10% 0 70% 0); }
+            100% { clip-path: inset(30% 0 20% 0); }
+        }
+
+        @keyframes glitch-anim-2 {
+            0% { clip-path: inset(10% 0 60% 0); }
+            20% { clip-path: inset(30% 0 20% 0); }
+            40% { clip-path: inset(70% 0 10% 0); }
+            60% { clip-path: inset(20% 0 50% 0); }
+            80% { clip-path: inset(50% 0 30% 0); }
+            100% { clip-path: inset(5% 0 80% 0); }
+        }
+
+        .subtitle {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #e2e8f0;
+            transform: translateZ(60px);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        :root.light-mode .subtitle {
+            color: #334155;
+        }
+
+        .desc {
+            font-size: 1rem;
+            color: #94a3b8;
+            margin-bottom: 2.5rem;
+            transform: translateZ(40px);
+            line-height: 1.6;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        :root.light-mode .desc {
+            color: #475569;
+        }
+
+        .btn-home {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 2rem;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform: translateZ(55px);
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4), inset 0 1px 0 rgba(255,255,255,0.4);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-home::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+        
+        .btn-home:hover {
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.6);
+            transform: translateZ(75px) translateY(-4px) scale(1.05);
+            border-color: rgba(255, 255, 255, 0.6);
+        }
+
+        .btn-home:hover::before {
+            transform: translateX(100%);
+        }
+
+        .floating-element {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.02);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.08);
+            pointer-events: none;
+            animation: float 10s infinite ease-in-out;
+            z-index: 1;
+            box-shadow: inset 0 0 20px rgba(255,255,255,0.05);
+        }
+
+        .float-1 { width: 120px; height: 120px; top: -60px; left: -40px; animation-duration: 9s; transform: translateZ(-30px); }
+        .float-2 { width: 80px; height: 80px; bottom: 30px; right: -30px; animation-duration: 13s; animation-delay: -4s; transform: translateZ(20px); }
+        .float-3 { width: 50px; height: 50px; top: 40%; right: -50px; animation-duration: 7s; animation-delay: -2s; transform: translateZ(40px); }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0) translateZ(var(--tz, 0)); }
+            50% { transform: translateY(-30px) rotate(10deg) translateZ(var(--tz, 0)); }
+        }
+
+        /* Ambient Cursor Glow Follower */
+        #cursor-glow {
+            position: fixed;
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.12) 0%, transparent 60%);
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                        height 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                        background 0.4s ease;
+            mix-blend-mode: screen;
+        }
+
+        /* Neural network canvas */
+        #neural-canvas {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
+            opacity: 0.4;
+        }
+        
+        @media (max-width: 768px) {
+            .glitch-text { font-size: 5rem; }
+            .subtitle { font-size: 1.25rem; }
+            .glass-card { padding: 3rem 2rem; }
+            #cursor-glow { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div id="cursor-glow"></div>
+    <div class="ambient-mesh"></div>
+    <canvas id="neural-canvas"></canvas>
+
+    <!-- Parallax 3D Perspective Container -->
+    <div class="card-perspective">
+        <!-- Main Card -->
+        <div class="glass-card" id="tilt-card">
+            <div class="floating-element float-1" style="--tz: -30px"></div>
+            <div class="floating-element float-2" style="--tz: 20px"></div>
+            <div class="floating-element float-3" style="--tz: 40px"></div>
+
+            <div class="card-inner">
+                <div class="glitch-text" data-text="404">404</div>
+                <div class="subtitle">Neural Link Severed</div>
+                <p class="desc">
+                    The intelligence node you're looking for has drifted into the void. 
+                    Perhaps a wrong gesture led you here, or the signal was lost.
+                </p>
+                
+                <a href="/" class="btn-home" aria-label="Return home">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                    Re-establish Connection
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 1. Smooth 3D Hover Tilt Effect
+        const card = document.getElementById('tilt-card');
+        const MAX_TILT_X = 15; // Max rotation degrees on X axis
+        const MAX_TILT_Y = 15; // Max rotation degrees on Y axis
+
+        // Use requestAnimationFrame for smooth performance
+        let targetTiltX = 0;
+        let targetTiltY = 0;
+        let currentTiltX = 0;
+        let currentTiltY = 0;
+        let isHovering = false;
+
+        document.addEventListener('mousemove', (e) => {
+            if (window.matchMedia('(max-width: 768px)').matches) return; // Disable on mobile
+
+            const xAxis = (window.innerWidth / 2 - e.pageX) / (window.innerWidth / 2);
+            const yAxis = (window.innerHeight / 2 - e.pageY) / (window.innerHeight / 2);
+
+            targetTiltX = yAxis * MAX_TILT_X;
+            targetTiltY = -xAxis * MAX_TILT_Y;
+            isHovering = true;
+        });
+
+        document.addEventListener('mouseleave', () => {
+            targetTiltX = 0;
+            targetTiltY = 0;
+            isHovering = false;
+        });
+
+        function animateTilt() {
+            // Lerp (Linear Interpolation) for buttery smoothness
+            currentTiltX += (targetTiltX - currentTiltX) * 0.1;
+            currentTiltY += (targetTiltY - currentTiltY) * 0.1;
+
+            if (isHovering || Math.abs(currentTiltX) > 0.1 || Math.abs(currentTiltY) > 0.1) {
+                card.style.transform = `rotateX(${currentTiltX}deg) rotateY(${currentTiltY}deg) translateZ(0)`;
+            }
+            
+            requestAnimationFrame(animateTilt);
+        }
+        animateTilt();
+
+        // 2. Cursor Glow Effect with Spring Physics
+        const cursor = document.getElementById('cursor-glow');
+        let mouseX = window.innerWidth / 2;
+        let mouseY = window.innerHeight / 2;
+        let curX = mouseX;
+        let curY = mouseY;
+        // Velocity variables for 'springy' feel
+        let vx = 0;
+        let vy = 0;
+
+        document.addEventListener('mousemove', (e) => {
+            if (window.matchMedia('(max-width: 768px)').matches) return;
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        function animateCursor() {
+            if (window.matchMedia('(max-width: 768px)').matches) return;
+            // Spring easing
+            vx += (mouseX - curX) * 0.05;
+            vy += (mouseY - curY) * 0.05;
+            vx *= 0.8; // Friction
+            vy *= 0.8; // Friction
+
+            curX += vx;
+            curY += vy;
+            
+            cursor.style.left = curX + 'px';
+            cursor.style.top = curY + 'px';
+            requestAnimationFrame(animateCursor);
+        }
+        animateCursor();
+
+        // Expand glow when hovering over the button
+        document.querySelectorAll('a, .btn-home').forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                cursor.style.width = '600px';
+                cursor.style.height = '600px';
+                cursor.style.background = 'radial-gradient(circle, rgba(239, 68, 68, 0.15) 0%, transparent 60%)';
+            });
+            el.addEventListener('mouseleave', () => {
+                cursor.style.width = '400px';
+                cursor.style.height = '400px';
+                cursor.style.background = 'radial-gradient(circle, rgba(139, 92, 246, 0.12) 0%, transparent 60%)';
+            });
+        });
+
+        // 3. Immersive Neural Canvas Network (Lost Signal variant)
+        const canvas = document.getElementById('neural-canvas');
+        const ctx = canvas.getContext('2d');
+        let W = window.innerWidth;
+        let H = window.innerHeight;
+        canvas.width = W;
+        canvas.height = H;
+
+        window.addEventListener('resize', () => {
+            W = window.innerWidth;
+            H = window.innerHeight;
+            canvas.width = W;
+            canvas.height = H;
+        });
+
+        const particles = [];
+        const isMobile = window.matchMedia('(max-width: 768px)').matches;
+        const config = {
+            particleCount: isMobile ? 30 : 70,
+            maxDist: 160,
+            speed: 0.6
+        };
+
+        // Initialize particles
+        for (let i = 0; i < config.particleCount; i++) {
+            particles.push({
+                x: Math.random() * W,
+                y: Math.random() * H,
+                vx: (Math.random() - 0.5) * config.speed,
+                vy: (Math.random() - 0.5) * config.speed,
+                radius: Math.random() * 1.5 + 0.5,
+                hue: Math.random() > 0.5 ? '239,68,68' : '139,92,246' // Red or Purple
+            });
+        }
+
+        function drawNeural() {
+            ctx.clearRect(0, 0, W, H);
+            
+            // Loop over all particles array
+            for (let i = 0; i < particles.length; i++) {
+                let p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+
+                // Bounce
+                if (p.x < 0 || p.x > W) p.vx *= -1;
+                if (p.y < 0 || p.y > H) p.vy *= -1;
+
+                // Mouse Repulsion Field
+                if (!isMobile) {
+                    const dx = p.x - mouseX;
+                    const dy = p.y - mouseY;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    if (dist < 150) {
+                        const force = (150 - dist) / 150;
+                        p.x += dx * 0.02 * force;
+                        p.y += dy * 0.02 * force;
+                    }
+                }
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(${p.hue}, 0.6)`;
+                ctx.fill();
+
+                // Connections
+                for (let j = i + 1; j < particles.length; j++) {
+                    let p2 = particles[j];
+                    let dx2 = p.x - p2.x;
+                    let dy2 = p.y - p2.y;
+                    let dist2 = Math.sqrt(dx2*dx2 + dy2*dy2);
+
+                    if (dist2 < config.maxDist) {
+                        ctx.beginPath();
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        // Network fading opacity based on distance
+                        const opacity = 0.15 * (1 - dist2 / config.maxDist);
+                        ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
+                        ctx.lineWidth = 0.8;
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            requestAnimationFrame(drawNeural);
+        }
+        drawNeural();
+    </script>
+</body>
+</html>
